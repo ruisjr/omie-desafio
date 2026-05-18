@@ -48,7 +48,7 @@ var
   LTypRtti: TRttiType;
   LprpRtti: TRttiProperty;
 begin
-  Result := _CreateObjectByName(T);
+  Result := _CreateObjectByName(TObject(TypeInfo(T)));
 
   pDataSet.First;
   while not pDataSet.Eof do
@@ -62,7 +62,7 @@ begin
         begin
           if LPrpRtti.Has<DBField> then
           begin
-            LValue := Self._GetValueProperty(T, LPrpRtti, LField);
+            LValue := Self._GetValueProperty(TObject(TypeInfo(T)), LPrpRtti, LField);
             if LValue.IsEmpty then
               Continue;
             LPrpRtti.SetValue(Pointer(Result), LValue);
@@ -89,7 +89,7 @@ begin
 
   while not pDataSet.Eof do
   begin
-    Result.Add(_CreateObjectByName(T));
+    Result.Add(_CreateObjectByName(TObject(TypeInfo(T))));
     LCtxRtti := TRttiContext.Create;
     try
       for LField in pDataSet.Fields do
@@ -98,7 +98,7 @@ begin
         begin
           if LPrpRtti.Has<DBField> then
           begin
-            LValue := Self._GetValueProperty(T, LPrpRtti, LField);
+            LValue := Self._GetValueProperty(TObject(TypeInfo(T)), LPrpRtti, LField);
             if LValue.IsEmpty then
               Continue;
             LPrpRtti.SetValue(Pointer(Result[Pred(Result.Count)]),LValue );

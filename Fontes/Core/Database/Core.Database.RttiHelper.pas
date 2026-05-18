@@ -4,11 +4,10 @@ interface
 
 uses
   {Classes de Sistema}
-  System.Rtti,
-  System.SysUtils,
+   System.Rtti
+  ,System.SysUtils
   {Classes de Negócio}
-  Core.Entidades.CustomAttributes;
-
+  ,Core.Entidade.CustomAttributes;
 
 type
   TRttiPropertyHelper = class Helper for TRttiProperty
@@ -59,7 +58,7 @@ begin
   Result := Name;
 
   if IsDBDateTime then
-    Result := GetAttribute<Core.Entidades.CustomAttributes.DBDateTime>.Name;
+    Result := GetAttribute<Core.Entidade.CustomAttributes.DBDateTime>.Name;
 end;
 
 function TRttiPropertyHelper.DisplayName: string;
@@ -129,7 +128,7 @@ begin
         Exit(vPrpRtti);
     end;
   finally
-      vCtx.Free;
+    vCtx.Free;
   end;
 end;
 
@@ -145,7 +144,7 @@ end;
 
 function TRttiPropertyHelper.IsDBDateTime: Boolean;
 begin
-  Result := Has<Core.Entidades.CustomAttributes.DBDateTime>;
+  Result := Has<Core.Entidade.CustomAttributes.DBDateTime>;
 end;
 
 function TRttiPropertyHelper.IsDBField: Boolean;
