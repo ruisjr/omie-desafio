@@ -17,24 +17,24 @@ uses
   ,Core.Entidade.CustomAttributes;
 
 type
-  TDBManager = class(TInterfacedObject, IDBManager)
+  TDBManager<T: class> = class(TInterfacedObject, IDBManager<T>)
   strict private
     FFields: String;
-    FCriteria: TCriteria;
+    FSQLCriteria: TStringBuilder;
     FDBConnection: IDBConnection;
   public
     constructor Create(ADBConnection: IDBConnection); reintroduce;
     destructor Destroy; override;
 
-    function CreateCriteria: ICriteria;
-    function Criteria: ICriteria;
+    {procedures}
+    procedure FreeMemory;
 
-    function Fields(AFields: string): IDBManager;
-    function Where(const pConditional: String; const pOperatorType: TOperatorType; const pValue: TValue): IDBManager;
-    function WhereAnd(const pConditional: String; const pOperatorType: TOperatorType; const pValue: TValue): IDBManager;
+    {functions}
+    function Fields(AFields: string): IDBManager<T>;
+    function Where(pCriteria: TCriterion): IDBManager<T>;
 
-    function Find<T: class>(Id: Integer): T;
-    function FindAll<T: class>: TObjectList<T>;
+    function Find(Id: Integer): T;
+    function FindAll: TObjectList<T>;
   end;
 
 implementation
@@ -47,40 +47,27 @@ uses
 
 { TDBManager }
 
-constructor TDBManager.Create(ADBConnection: IDBConnection);
+constructor TDBManager<T>.Create(ADBConnection: IDBConnection);
 begin
+  FSQLCriteria := TStringBuilder.Create;
+
   FDBConnection := ADBConnection;
   FDBConnection.Connect;
   inherited Create;
 end;
 
-function TDBManager.CreateCriteria: ICriteria;
+destructor TDBManager<T>.Destroy;
 begin
-  if not Assigned(FCriteria) then
-    FCriteria := TCriteria.Create;
-  Result := FCriteria;
-end;
-
-function TDBManager.Criteria: ICriteria;
-begin
-  if not Assigned(FCriteria) then
-    FCriteria := TCriteria(Self.CreateCriteria);
-
-  Result := FCriteria;
-end;
-
-destructor TDBManager.Destroy;
-begin
-  FreeAndNil(FCriteria);
+  FreeMemory;
   inherited;
 end;
 
-function TDBManager.Fields(AFields: string): IDBManager;
+function TDBManager<T>.Fields(AFields: string): IDBManager<T>;
 begin
   FFields := AFields;
 end;
 
-function TDBManager.Find<T>(Id: Integer): T;
+function TDBManager<T>.Find(Id: Integer): T;
 var
   LSQL: TStringBuilder;
   LQuery: IDBQuery;
@@ -110,7 +97,7 @@ begin
   end;
 end;
 
-function TDBManager.FindAll<T>: TObjectList<T>;
+function TDBManager<T>.FindAll: TObjectList<T>;
 var
   LSQL: TStringBuilder;
   LQuery: IDBQuery;
@@ -122,6 +109,7 @@ begin
     LSQL.AppendLine(TDBRtti<T>.New.Fields);
     LSQL.AppendLine(' FROM ');
     LSQL.AppendLine(TDBRtti<T>.New.TableName);
+    LSQL.Append('WHERE ' + FSQLCriteria.ToString);
 
     LQuery := FDBConnection.CreateQuery;
     try
@@ -131,19 +119,25 @@ begin
       LQuery.FreeMemory;
     end;
   finally
+    FSQLCriteria.Clear;
     LSQL.Clear;
     LSQL.Free;
   end;
 end;
 
-function TDBManager.Where(const pConditional: String; const pOperatorType: TOperatorType; const pValue: TValue): IDBManager;
+procedure TDBManager<T>.FreeMemory;
 begin
-
+  FreeAndNil(FSQLCriteria);
+  FDBConnection.FreeMemory;
 end;
 
-function TDBManager.WhereAnd(const pConditional: String; const pOperatorType: TOperatorType; const pValue: TValue): IDBManager;
+function TDBManager<T>.Where(pCriteria: TCriterion): IDBManager<T>;
 begin
-
+  Result := Self;
+  if FSQLCriteria.Length > 0 then
+    FSQLCriteria.Append(Format('AND %s %s %s', [pCriteria.Field, pCriteria.&Operator, TDBRtti<T>.ParseValueToString(pCriteria.Value)]))
+  else
+    FSQLCriteria.Append(Format('%s %s %s', [pCriteria.Field, pCriteria.&operator, TDBRtti<T>.ParseValueToString(pCriteria.Value)]))
 end;
 
 end.

@@ -25,14 +25,14 @@ uses
 
 function TModelCliente.RetornarClientePorID(const IdCliente: Integer): TCliente;
 var
-  LManager: TDBManager;
+  LManager: TDBManager<TCliente>;
   LConnection: TDBConnectionPGAdapter;
 begin
   LConnection := TDBConnectionPGAdapter.Create;
   try
-    LManager := TDBManager.Create(LConnection);
+    LManager := TDBManager<TCliente>.Create(LConnection);
     try
-      Result := LManager.Find<TCliente>(IdCliente);
+      Result := LManager.Find(IdCliente);
     finally
       FreeAndNil(LManager);
     end;

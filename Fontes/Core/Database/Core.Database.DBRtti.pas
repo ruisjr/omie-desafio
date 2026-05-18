@@ -8,6 +8,7 @@ uses
   ,System.Rtti
   ,System.Classes
   ,System.TypInfo
+  ,System.Variants
   ,System.SysUtils
   ,System.Generics.Collections
   {Classes de Negócio}
@@ -23,7 +24,11 @@ type
   public
     constructor Create; reintroduce;
 
+    {class functions}
     class function New: TDBRtti<T>;
+    class function ParseValueToString(const pValue: TValue): string;
+
+    {functions}
     function Fields: String;
     function TableName: String;
     function WhereID: String;
@@ -91,7 +96,7 @@ begin
 
   while not pDataSet.Eof do
   begin
-    Result.Add(_CreateObjectByName(TObject(TypeInfo(T))));
+    Result.Add(_CreateObjectByName(TypeInfo(T)));
     LCtxRtti := TRttiContext.Create;
     try
       for LField in pDataSet.Fields do
@@ -104,7 +109,7 @@ begin
             if LValue.IsEmpty then
               Continue;
 
-            LPrpRtti.SetValue(Pointer(Result[Pred(Result.Count)]),LValue );
+            LPrpRtti.SetValue(Pointer(Result[Pred(Result.Count)]), LValue);
           end;
         end;
       end;
@@ -151,6 +156,44 @@ begin
   Result := Self.Create;
 end;
 
+class function TDBRtti<T>.ParseValueToString(const pValue: TValue): string;
+begin
+  case pValue.Kind of
+    tkUnknown: ;
+    tkInteger:
+      Result := pValue.ToString;
+    tkChar: ;
+    tkEnumeration: ;
+    tkFloat:
+    begin
+      if (pValue.TypeInfo    = TypeInfo(TDate))
+         or (pValue.TypeInfo = TypeInfo(TTime))
+         or (pValue.TypeInfo = TypeInfo(TDateTime)) then
+      begin
+        Result := pValue.ToString;
+      end
+      else
+        pValue.ToString;
+    end;
+    tkSet: ;
+    tkClass: ;
+    tkMethod: ;
+    tkString, tkWChar, tkLString, tkWString, tkVariant, tkUString:
+      Result := pValue.AsString;
+    tkArray: ;
+    tkRecord: ;
+    tkInterface: ;
+    tkInt64:
+      Result := IntToStr(pValue.Cast<Int64>.AsInt64);
+    tkDynArray: ;
+    tkClassRef: ;
+    tkPointer: ;
+    tkProcedure: ;
+  else
+    Result := VarToStr(pValue.AsVariant);
+  end;
+end;
+
 function TDBRtti<T>.TableName: String;
 var
   LTypRtti: TRttiType;
@@ -172,14 +215,18 @@ var
   LTypRtti: TRttiType;
   LPrpRtti: TRttiProperty;
   LCtxRtti: TRttiContext;
+  LAtributo: TCustomAttribute;
 begin
   LCtxRtti := TRttiContext.Create;
   try
-    LTypRtti := LCtxRtti.GetType(T);
-    if LTypRtti.Has<PK> then
+    LTypRtti := LCtxRtti.GetType(TypeInfo(T));
+    for LPrpRtti in LTypRtti.GetProperties do
     begin
-      LPrpRtti := LTypRtti.GetProperty<PK>;
-      Result := LPrpRtti.FieldName;
+      for LAtributo in LPrpRtti.GetAttributes do
+      begin
+        if LAtributo is PK then
+          Exit(LPrpRtti.FieldName);
+      end;
     end;
   finally
     LCtxRtti.Free;
@@ -194,7 +241,7 @@ var
 begin
   LContext := TRttiContext.Create;
   try
-    LType := LContext.GetType(T) as TRttiInstanceType;
+    LType := LContext.GetType(TypeInfo(T)) as TRttiInstanceType;
     LMethod := LType.GetMethod('Create');
 
     if Assigned(LMethod) then

@@ -4,7 +4,7 @@ interface
 
 uses
   Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
-  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls;
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, Vcl.StdCtrls, System.Generics.Collections;
 
 type
   TForm1 = class(TForm)
@@ -30,12 +30,12 @@ uses
 
 procedure TForm1.Button1Click(Sender: TObject);
 var
-  LPedido: TPedido;
+  LPedido: TObjectList<TPedido>;
   LModelPedido: TModelPedido;
 begin
   LModelPedido := TModelPedido.Create;
   try
-    LPedido := LModelPedido.RetornaPedidoPorId(1);
+    LPedido := LModelPedido.RetornaPedidosPorCliente(1);
   finally
     if Assigned(LPedido) then
       FreeAndNil(LPedido);

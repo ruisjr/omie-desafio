@@ -8,10 +8,12 @@ uses
   ,System.Rtti
   ,System.Generics.Collections
   {Classes de Negócio}
+  ,Core.Database.Criteria
   ,Core.Database.DBTypes;
 
 type
   IDBQuery = interface;
+//  TCriteriaCallback = reference to procedure(AField: String; pValue: TValue);
 
   IDBConnection = interface
     ['{738E4764-41E6-47A3-9CC7-E7D316BDD14C}']
@@ -37,12 +39,14 @@ type
     function AddGroup(ACriteria: string): ICriteria;
   end;
 
-  IDBManager = interface
+  IDBManager<T: class> = interface
     ['{F756E559-5E2E-4653-BE5F-CC158A63A4EC}']
-    function CreateCriteria: ICriteria;
-    function Fields(AFields: string): IDBManager;
-    function Where(const pConditional: String; const pOperatorType: TOperatorType; const pValue: TValue): IDBManager;
-    function WhereAnd(const pConditional: String; const pOperatorType: TOperatorType; const pValue: TValue): IDBManager;
+    procedure FreeMemory;
+
+    function Find(Id: Integer): T;
+    function FindAll: TObjectList<T>;
+    function Fields(AFields: string): IDBManager<T>;
+    function Where(pCriteria: TCriterion): IDBManager<T>;
   end;
 
   IDBRtti<T: class> = interface
