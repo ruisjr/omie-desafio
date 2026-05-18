@@ -38,6 +38,7 @@ type
     function Has<T: TCustomAttribute>: Boolean;
     function IsTable: Boolean;
     function GetAttribute<T: TCustomAttribute>: T;
+    function GetProperty<T: TCustomAttribute>: TRttiProperty;
     function GetPropertyFromAttribute<T: DBField>(const pFieldName: string): TRttiProperty; overload;
   end;
 
@@ -201,6 +202,20 @@ begin
   begin
     if vAtributo is T then
       Exit((vAtributo as T));
+  end;
+end;
+
+function TRttiTypeHelper.GetProperty<T>: TRttiProperty;
+var
+  RttiProp: TRttiProperty;
+begin
+  Result := nil;
+  for RttiProp in GetProperties do
+  begin
+    if RttiProp.GetAttribute<T> = nil then
+      Continue;
+
+    Exit(RttiProp);
   end;
 end;
 

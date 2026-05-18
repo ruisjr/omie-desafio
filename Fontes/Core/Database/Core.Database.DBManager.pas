@@ -91,10 +91,11 @@ begin
     LSQL.AppendLine('SELECT ');
     if FFields.IsEmpty then
       LSQL.AppendLine(TDBRtti<T>.New.Fields);
+
     LSQL.AppendLine(' FROM ');
     LSQL.AppendLine(TDBRtti<T>.New.TableName);
     LSQL.AppendLine(' WHERE ');
-    LSQL.AppendLine('id = 1');
+    LSQL.AppendLine(Format('%s = %d', [TDBRtti<T>.New.WhereID, Id]));
 
     LQuery := FDBConnection.CreateQuery;
     try

@@ -37,6 +37,8 @@ begin
   try
     LPedido := LModelPedido.RetornaPedidoPorId(1);
   finally
+    if Assigned(LPedido) then
+      FreeAndNil(LPedido);
     FreeAndNil(LModelPedido);
   end;
 end;

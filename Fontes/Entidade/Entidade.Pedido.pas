@@ -7,6 +7,8 @@ uses
    Core.Entidade.ModelBase
   ,Core.Entidade.CustomAttributes;
 
+  {$RTTI EXPLICIT METHODS([vcPrivate..vcPublished]) PROPERTIES([vcPrivate..vcPublished]) FIELDS([vcPrivate..vcPublished])}
+
 type
   [Table('pedido')]
   TPedido = class(TBaseModel)

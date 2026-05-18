@@ -26,6 +26,7 @@ type
     class function New: TDBRtti<T>;
     function Fields: String;
     function TableName: String;
+    function WhereID: String;
 
     function DataSetToEntity(pDataSet: TDataSet): T;
     function DataSetToEntityList(pDataSet: TDataSet): TObjectList<T>;
@@ -65,6 +66,7 @@ begin
             LValue := Self._GetValueProperty(TObject(TypeInfo(T)), LPrpRtti, LField);
             if LValue.IsEmpty then
               Continue;
+
             LPrpRtti.SetValue(Pointer(Result), LValue);
           end;
         end;
@@ -101,6 +103,7 @@ begin
             LValue := Self._GetValueProperty(TObject(TypeInfo(T)), LPrpRtti, LField);
             if LValue.IsEmpty then
               Continue;
+
             LPrpRtti.SetValue(Pointer(Result[Pred(Result.Count)]),LValue );
           end;
         end;
@@ -128,7 +131,7 @@ begin
       LFields.Delimiter := ',';
       LFields.StrictDelimiter := True;
 
-      LTypRtti := LCtxRtti.GetType(TypeInfo(T));
+      LTypRtti := LCtxRtti.GetType(TObject(TypeInfo(T)));
       for LPrpRtti in LTypRtti.GetProperties do
       begin
         if LPrpRtti.Has<DBField> then
@@ -159,6 +162,25 @@ begin
     LTypRtti := LCtxRtti.GetType(TypeInfo(T));
     if LTypRtti.Has<Table> then
       Result := LTypRtti.GetAttribute<Table>.Name;
+  finally
+    LCtxRtti.Free;
+  end;
+end;
+
+function TDBRtti<T>.WhereID: String;
+var
+  LTypRtti: TRttiType;
+  LPrpRtti: TRttiProperty;
+  LCtxRtti: TRttiContext;
+begin
+  LCtxRtti := TRttiContext.Create;
+  try
+    LTypRtti := LCtxRtti.GetType(T);
+    if LTypRtti.Has<PK> then
+    begin
+      LPrpRtti := LTypRtti.GetProperty<PK>;
+      Result := LPrpRtti.FieldName;
+    end;
   finally
     LCtxRtti.Free;
   end;

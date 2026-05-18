@@ -2,6 +2,8 @@ unit Core.Entidade.CustomAttributes;
 
 interface
 
+{$RTTI EXPLICIT METHODS([vcPrivate..vcPublished]) PROPERTIES([vcPrivate..vcPublished]) FIELDS([vcPrivate..vcPublished])}
+
 type
   Table = class(TCustomAttribute)
   private

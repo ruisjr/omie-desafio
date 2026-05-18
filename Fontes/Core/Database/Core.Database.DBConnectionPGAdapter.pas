@@ -138,12 +138,12 @@ var
   LMessage: String;
 begin
   try
-    LPath := StringReplace(ExtractFilePath(Application.ExeName), cDirectoryExec+'\', '', [rfReplaceAll]) + 'Drivers\FDConnectionDefs.ini';
+    LPath := IncludeTrailingPathDelimiter('C:\'+cAppName+'\Drivers')+'FDConnectionDefs.ini';
     LArqIni := TIniFile.Create(LPath);
     try
       FLink := TFDPhysPGDriverLink.Create(nil);
       FLink.Release;
-      FLink.VendorLib := StringReplace(ExtractFilePath(Application.ExeName), cDirectoryExec+'\', '', [rfReplaceAll]) + 'Lib\libpq.dll';
+      FLink.VendorLib := IncludeTrailingPathDelimiter('C:\'+cAppName+'\Lib')+'libpq.dll';
 
       FConnection := TFDConnection.Create(nil);
 
@@ -167,6 +167,8 @@ begin
 
       FConnection.Params.UserName := LArqIni.ReadString(FAppName, 'User_Name', 'postgres');
       FConnection.Params.Password := LArqIni.ReadString(FAppName, 'Password',  'postgres');
+
+      Self.Connect;
     finally
       FreeAndNil(LArqIni);
     end;
