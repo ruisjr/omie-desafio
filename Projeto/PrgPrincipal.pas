@@ -24,21 +24,39 @@ implementation
 uses
    Model.Pedido
   ,Entidade.Pedido
-  ,Entidade.Cliente;
+  ,Entidade.Cliente
+  ,Core.Database.Interfaces
+  ,Core.Database.DBManager
+  ,Core.Database.DBConnectionPGAdapter;
 
 {$R *.dfm}
 
 procedure TForm1.Button1Click(Sender: TObject);
 var
-  LPedido: TObjectList<TPedido>;
+  LPedidoList: TObjectList<TPedido>;
   LModelPedido: TModelPedido;
+  LPedido: TPedido;
+  LManager: IDBManager<TPedido>;
+  LDBConnection: IDBConnection;
 begin
-  LModelPedido := TModelPedido.Create;
+//  LModelPedido := TModelPedido.Create;
+  LPedido := TPedido.Create;
+  LDBConnection := TDBConnectionPGAdapter.Create;
+  LManager := TDBManager<TPedido>.Create(LDBConnection);
   try
-    LPedido := LModelPedido.RetornaPedidosPorCliente(1);
+//    LPedidoList := LModelPedido.RetornaPedidosPorCliente(1);
+    LPedido.Data := Now;
+    LPedido.IdCliente := 1;
+    LPedido.ValorTotal := 125.00;
+    try
+      LManager.Insert(LPedido);
+    except
+      on e: exception do
+        showmessage('Ocorreu erro' + E.Message);
+    end;
   finally
-    if Assigned(LPedido) then
-      FreeAndNil(LPedido);
+    if Assigned(LPedidoList) then
+      FreeAndNil(LPedidoList);
     FreeAndNil(LModelPedido);
   end;
 end;

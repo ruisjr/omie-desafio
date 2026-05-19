@@ -8,7 +8,6 @@ uses
   Core.Database.DBManager in '..\Fontes\Core\Database\Core.Database.DBManager.pas',
   Core.Database.DBQueryPGAdapter in '..\Fontes\Core\Database\Core.Database.DBQueryPGAdapter.pas',
   Core.Database.DBRtti in '..\Fontes\Core\Database\Core.Database.DBRtti.pas',
-  Core.Database.DBSQLMaker in '..\Fontes\Core\Database\Core.Database.DBSQLMaker.pas',
   Core.Database.DBTypes in '..\Fontes\Core\Database\Core.Database.DBTypes.pas',
   Core.Database.Interfaces in '..\Fontes\Core\Database\Core.Database.Interfaces.pas',
   Core.Database.RttiHelper in '..\Fontes\Core\Database\Core.Database.RttiHelper.pas',
@@ -22,7 +21,8 @@ uses
   Model.Pedido in '..\Fontes\Model\Model.Pedido.pas',
   Model.Cliente in '..\Fontes\Model\Model.Cliente.pas',
   Core.Environment in '..\Fontes\Core\Core.Environment.pas',
-  Core.Logs in '..\Fontes\Core\Core.Logs.pas';
+  Core.Logs in '..\Fontes\Core\Core.Logs.pas',
+  Core.Database.SQLMaker in '..\Fontes\Core\Database\Core.Database.SQLMaker.pas';
 
 {$R *.res}
 

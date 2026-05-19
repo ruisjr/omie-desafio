@@ -24,13 +24,14 @@ implementation
 uses
    Core.Database.Criteria
   ,Core.Database.DBManager
+  ,Core.Database.Interfaces
   ,Core.Database.DBConnectionPGAdapter;
 
 { TModelPedido }
 
 function TModelPedido.RetornaPedidoPorId(const IdPedido: Integer): TPedido;
 var
-  LManager: TDBManager<TPedido>;
+  LManager: IDBManager<TPedido>;
   LConnection: TDBConnectionPGAdapter;
 begin
   LConnection := TDBConnectionPGAdapter.Create;
@@ -39,7 +40,7 @@ begin
     try
       Result := LManager.Find(IdPedido);
     finally
-      FreeAndNil(LManager);
+      LManager.FreeMemory;
     end;
 
   finally
@@ -49,7 +50,7 @@ end;
 
 function TModelPedido.RetornaPedidosPorCliente(const IdCliente: Integer): TObjectList<TPedido>;
 var
-  LManager: TDBManager<TPedido>;
+  LManager: IDBManager<TPedido>;
   LConnection: TDBConnectionPGAdapter;
 begin
   LConnection := TDBConnectionPGAdapter.Create;
@@ -58,7 +59,7 @@ begin
     try
       Result := LManager.Where(TCriteria.Equal('id_cliente', 1)).FindAll;
     finally
-      LManager.Free;
+      LManager.FreeMemory;
     end;
 
   finally

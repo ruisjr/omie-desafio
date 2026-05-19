@@ -19,13 +19,14 @@ implementation
 
 uses
    Core.Database.DBManager
+  ,Core.Database.Interfaces
   ,Core.Database.DBConnectionPGAdapter;
 
 { TModelCliente }
 
 function TModelCliente.RetornarClientePorID(const IdCliente: Integer): TCliente;
 var
-  LManager: TDBManager<TCliente>;
+  LManager: IDBManager<TCliente>;
   LConnection: TDBConnectionPGAdapter;
 begin
   LConnection := TDBConnectionPGAdapter.Create;
@@ -34,7 +35,7 @@ begin
     try
       Result := LManager.Find(IdCliente);
     finally
-      FreeAndNil(LManager);
+      LManager.FreeMemory
     end;
 
   finally

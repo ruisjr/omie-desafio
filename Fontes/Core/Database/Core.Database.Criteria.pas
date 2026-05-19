@@ -18,6 +18,7 @@ type
   TCriteria = class
   public
     class function Equal(const AField: string; const AValue: TValue): TCriterion; static;
+    class function Diff(const AField: string; const AValue: TValue): TCriterion; static;
     class function GreaterThan(const AField: string; const AValue: TValue): TCriterion; static;
   end;
 
@@ -30,6 +31,13 @@ class function TCriteria.Equal(const AField: string; const AValue: TValue): TCri
 begin
   Result.Field := AField;
   Result.Operator := '=';
+  Result.Value := AValue;
+end;
+
+class function TCriteria.Diff(const AField: string; const AValue: TValue): TCriterion;
+begin
+  Result.Field := AField;
+  Result.Operator := '<>';
   Result.Value := AValue;
 end;
 

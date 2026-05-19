@@ -13,7 +13,6 @@ uses
 
 type
   IDBQuery = interface;
-//  TCriteriaCallback = reference to procedure(AField: String; pValue: TValue);
 
   IDBConnection = interface
     ['{738E4764-41E6-47A3-9CC7-E7D316BDD14C}']
@@ -42,6 +41,7 @@ type
   IDBManager<T: class> = interface
     ['{F756E559-5E2E-4653-BE5F-CC158A63A4EC}']
     procedure FreeMemory;
+    procedure Insert(pEntity: T);
 
     function Find(Id: Integer): T;
     function FindAll: TObjectList<T>;
@@ -51,17 +51,25 @@ type
 
   IDBRtti<T: class> = interface
     ['{C7B611F6-D3B4-4AE4-80CF-B1BB30B3C976}']
+    function DictionaryFields(pEntity: TObject): TDictionary<String, Variant>;
+    function DictionaryTypeFields(pEntity: TObject): TDictionary<string, TFieldType>;
+
     function Fields: String;
+    function Values(pEntity: T): String;
     function TableName: String;
     function DataSetToEntity(pDataSet: TDataSet): T;
     function DataSetToEntityList(pDataSet: TDataSet): TObjectList<T>;
   end;
 
-  ISQLMaker = interface
+  ISQLMaker<T: class> = interface
     ['{3E278934-A4A1-4945-A12B-62C9DBEB70E2}']
-    function Fields: ISQLMaker;
-    function TableName(out pTableName: String): ISQLMaker;
+    procedure FreeMemory;
+
+    function Fields(out pFields: String): ISQLMaker<T>;
+    function TableName(out pTableName: String): ISQLMaker<T>;
+    function Where(pCriterion: TCriterion): ISQLMaker<T>;
     function Select: String;
+    function Insert(pEntity: T): String;
   end;
 
   IDBQuery = interface
@@ -69,6 +77,8 @@ type
     function ToDataSet(pSQL: String): TDataSet;
 
     procedure FreeMemory;
+    procedure FillParameter(pEntity: TObject; pModeInsert: Boolean = False);
+    procedure ExecSQL(pEntity: TObject; pSQL: String);
   end;
 
 implementation

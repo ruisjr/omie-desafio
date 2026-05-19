@@ -12,6 +12,7 @@ uses
   ,Core.Database.DBRtti
   ,Core.Database.DBTypes
   ,Core.Database.Criteria
+  ,Core.Database.SQLMaker
   ,Core.Database.Interfaces
   ,Core.Database.DBQueryPGAdapter
   ,Core.Entidade.CustomAttributes;
@@ -20,7 +21,7 @@ type
   TDBManager<T: class> = class(TInterfacedObject, IDBManager<T>)
   strict private
     FFields: String;
-    FSQLCriteria: TStringBuilder;
+    FCriterion: TCriterion;
     FDBConnection: IDBConnection;
   public
     constructor Create(ADBConnection: IDBConnection); reintroduce;
@@ -28,6 +29,7 @@ type
 
     {procedures}
     procedure FreeMemory;
+    procedure Insert(pEntity: T);
 
     {functions}
     function Fields(AFields: string): IDBManager<T>;
@@ -49,8 +51,6 @@ uses
 
 constructor TDBManager<T>.Create(ADBConnection: IDBConnection);
 begin
-  FSQLCriteria := TStringBuilder.Create;
-
   FDBConnection := ADBConnection;
   FDBConnection.Connect;
   inherited Create;
@@ -99,45 +99,39 @@ end;
 
 function TDBManager<T>.FindAll: TObjectList<T>;
 var
-  LSQL: TStringBuilder;
   LQuery: IDBQuery;
   LDataSet: TDataSet;
 begin
-  LSQL := TStringBuilder.Create;
+  LQuery := FDBConnection.CreateQuery;
   try
-    LSQL.AppendLine('SELECT ');
-    LSQL.AppendLine(TDBRtti<T>.New.Fields);
-    LSQL.AppendLine(' FROM ');
-    LSQL.AppendLine(TDBRtti<T>.New.TableName);
-    LSQL.Append('WHERE ' + FSQLCriteria.ToString);
-
-    LQuery := FDBConnection.CreateQuery;
-    try
-      LDataSet := LQuery.ToDataSet(LSQL.ToString);
-      Result := TDBRtti<T>.New.DataSetToEntityList(LDataSet);
-    finally
-      LQuery.FreeMemory;
-    end;
+    LDataSet := LQuery.ToDataSet(TSQLMaker<T>.New.Where(FCriterion).Select);
+    Result := TDBRtti<T>.New.DataSetToEntityList(LDataSet);
   finally
-    FSQLCriteria.Clear;
-    LSQL.Clear;
-    LSQL.Free;
+    LQuery.FreeMemory;
   end;
 end;
 
 procedure TDBManager<T>.FreeMemory;
 begin
-  FreeAndNil(FSQLCriteria);
   FDBConnection.FreeMemory;
+end;
+
+procedure TDBManager<T>.Insert(pEntity: T);
+var
+  LQuery: IDBQuery;
+begin
+  LQuery := FDBConnection.CreateQuery;
+  try
+    LQuery.ExecSQL(pEntity, TSQLMaker<T>.New.Insert(pEntity))
+  finally
+    LQuery.FreeMemory;
+  end;
 end;
 
 function TDBManager<T>.Where(pCriteria: TCriterion): IDBManager<T>;
 begin
   Result := Self;
-  if FSQLCriteria.Length > 0 then
-    FSQLCriteria.Append(Format('AND %s %s %s', [pCriteria.Field, pCriteria.&Operator, TDBRtti<T>.ParseValueToString(pCriteria.Value)]))
-  else
-    FSQLCriteria.Append(Format('%s %s %s', [pCriteria.Field, pCriteria.&operator, TDBRtti<T>.ParseValueToString(pCriteria.Value)]))
+  FCriterion := pCriteria;
 end;
 
 end.
